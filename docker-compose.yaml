@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  n8n:
+    image: n8nio/n8n
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    volumes:
+      - ${HOME}/n8n_data:/home/node/.n8n
+    user: "${MY_UID}:${MY_GID}"
+    environment:
+      - N8N_USER_FOLDER=/home/node/.n8n
+      - WEBHOOK_URL=${WEBHOOK_URL}
