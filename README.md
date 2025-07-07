@@ -47,9 +47,9 @@ make start
    ```
 
 3. **Configure webhook URL (optional)**
-   
-   The webhook URL is configurable via the `WEBHOOK_URL` environment variable in the `.env` file. By default, it's set to `https://n8n-local-mbp.inro.fyi`. To customize it:
-   
+
+   The webhook URL is configurable via the `WEBHOOK_URL` environment variable in the `.env` file. By default, it's set to `https://your-n8n-webhook-url.com`. To customize it:
+
    ```bash
    # Edit .env file and change WEBHOOK_URL to your desired endpoint
    WEBHOOK_URL=https://your-domain.com
