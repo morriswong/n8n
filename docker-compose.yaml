@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   n8n:
     image: n8nio/n8n
@@ -8,7 +6,7 @@ services:
     ports:
       - "5678:5678"
     volumes:
-      - ${HOME}/n8n_data:/home/node/.n8n
+      - ${N8N_DATA_DIR:-${HOME}/n8n_data}:/home/node/.n8n
     user: "${MY_UID}:${MY_GID}"
     environment:
       - N8N_USER_FOLDER=/home/node/.n8n

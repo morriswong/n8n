@@ -1,0 +1,98 @@
+name: n8n Health Check
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push to main branch
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "health-check"
+  health-check:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up environment variables for docker-compose
+      - name: Set up environment
+        run: |
+          echo "MY_UID=$(id -u)" >> $GITHUB_ENV
+          echo "MY_GID=$(id -g)" >> $GITHUB_ENV
+          echo "WEBHOOK_URL=http://localhost:5678/webhook" >> $GITHUB_ENV
+          # Create a temporary directory for n8n data that's accessible
+          mkdir -p /tmp/n8n_data
+          chmod 755 /tmp/n8n_data
+          echo "N8N_DATA_DIR=/tmp/n8n_data" >> $GITHUB_ENV
+
+      # Start n8n service using docker-compose
+      - name: Start n8n service
+        run: |
+          echo "Starting n8n service..."
+          docker compose up -d
+          echo "n8n service started"
+
+      # Wait for n8n to initialize
+      - name: Wait for n8n to initialize
+        run: |
+          echo "Waiting for n8n to initialize..."
+          sleep 30
+          echo "Initialization wait complete"
+
+      # Check if n8n is responding
+      - name: Health check - Test n8n endpoint
+        run: |
+          echo "Performing health check..."
+          max_attempts=10
+          attempt=1
+          
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt/$max_attempts: Testing n8n endpoint..."
+            
+            if curl -f -s -o /dev/null http://localhost:5678; then
+              echo "✅ Health check passed! n8n is responding correctly."
+              exit 0
+            else
+              echo "❌ Health check failed on attempt $attempt"
+              if [ $attempt -eq $max_attempts ]; then
+                echo "❌ All health check attempts failed. n8n is not responding."
+                exit 1
+              fi
+              echo "Waiting 10 seconds before next attempt..."
+              sleep 10
+            fi
+            
+            attempt=$((attempt + 1))
+          done
+
+      # Show container logs for debugging if needed
+      - name: Show n8n logs (on failure)
+        if: failure()
+        run: |
+          echo "=== n8n Container Logs ==="
+          docker compose logs n8n
+
+      # Show container status for debugging
+      - name: Show container status (on failure)
+        if: failure()
+        run: |
+          echo "=== Container Status ==="
+          docker compose ps
+
+      # Clean up - stop the service
+      - name: Clean up
+        if: always()
+        run: |
+          echo "Stopping n8n service..."
+          docker compose down
+          echo "Cleanup complete"
