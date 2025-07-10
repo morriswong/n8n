@@ -23,7 +23,7 @@ A production-ready setup for running n8n automation platform using Docker with s
 
 ```bash
 # Clone the repository
-git clone <your-repo-url>
+git clone git@github.com:morriswong/n8n.git
 cd n8n
 
 # See all available commands
