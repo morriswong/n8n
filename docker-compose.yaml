@@ -8,7 +8,7 @@ services:
     volumes:
       - ${N8N_DATA_DIR:-${HOME}/n8n_data}:/home/node/.n8n
       - n8n_files:/home/node/.n8n-files
-    user: "${MY_UID}:${MY_GID}"
+    user: "${MY_UID:-1000}:${MY_GID:-1000}"
     environment:
       - N8N_USER_FOLDER=/home/node/.n8n
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
@@ -19,15 +19,22 @@ services:
       - WEBHOOK_URL=${WEBHOOK_URL}
       - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
       - GENERIC_TIMEZONE=Asia/Shanghai
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:5678/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   n8n-runner:
-    image: docker.n8n.io/n8nio/runners:2.18.5
+    image: n8nio/runners:2.18.5
     restart: always
     environment:
       - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
       - N8N_RUNNERS_AUTH_TOKEN=${N8N_RUNNERS_AUTH_TOKEN}
     depends_on:
-      - n8n
+      n8n:
+        condition: service_healthy
 
 volumes:
   n8n_files:
