@@ -32,11 +32,11 @@ logs: ## Show n8n container logs
 status: ## Show container status
 	@docker compose ps
 
-update: ## Pull latest n8n image and restart container (safe update preserving data)
+update: ## Pull latest n8n images and restart (safe update preserving data)
 	@echo "🔄 Updating n8n to the latest version..."
-	@docker compose pull n8n
+	@docker compose pull
 	@docker compose down
-	@docker compose up -d
+	@export MY_UID=$$(id -u) MY_GID=$$(id -g) HOME=$$HOME && docker compose up -d
 	@echo "✅ n8n updated and running at http://localhost:5678"
 
 clean: ## Remove containers and volumes (WARNING: This will delete your data!)
@@ -101,9 +101,9 @@ tunnel-run: ## Starts the tunnel, exposing your local n8n.
 
 tunnel-stop: ## Stops the running tunnel process.
 	@echo "🛑 Stopping tunnel '$(TUNNEL_NAME)'..."
-	@PID=$(pgrep -f "cloudflared tunnel run $(TUNNEL_NAME)"); \
-	if [ ! -z "$PID" ]; then \
-		kill $PID; \
+	@PID=$$(pgrep -f "cloudflared tunnel run $(TUNNEL_NAME)"); \
+	if [ ! -z "$$PID" ]; then \
+		kill $$PID; \
 		echo "✅ Tunnel process stopped."; \
 	else \
 		echo "✗ No running tunnel process found for '$(TUNNEL_NAME)'."; \
@@ -116,7 +116,7 @@ tunnel-info: ## Shows the status and details of the tunnel.
 tunnel-delete: ## Deletes the tunnel and its DNS record from Cloudflare.
 	@echo "⚠️  DANGER: This will permanently delete tunnel '$(TUNNEL_NAME)' and its DNS record from Cloudflare."
 	@read -p "Are you sure? [y/N] " -n 1 -r; echo; \
-	if [[ $REPLY =~ ^[Yy]$ ]]; then \
+	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
 		echo "🔥 Deleting tunnel..."; \
 		cloudflared tunnel delete $(TUNNEL_NAME); \
 		echo "✅ Tunnel deleted."; \
@@ -134,4 +134,4 @@ health: ## Check n8n health and show useful info
 	@curl -s -o /dev/null -w "HTTP Status: %{http_code}\n" http://localhost:5678 || echo "n8n not accessible"
 	@echo
 	@echo "Data directory:"
-	@ls -la ~/n8n-data-cf 2>/dev/null || echo "Data directory not found"
+	@ls -la ~/n8n_data 2>/dev/null || echo "Data directory not found"
