@@ -10,7 +10,7 @@ services:
       - n8n_files:/home/node/.n8n-files
     user: "${MY_UID:-1000}:${MY_GID:-1000}"
     environment:
-      - N8N_USER_FOLDER=/home/node/.n8n
+      - N8N_USER_FOLDER=/home/node
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
       - N8N_RUNNERS_ENABLED=true
       - N8N_RUNNERS_MODE=external
