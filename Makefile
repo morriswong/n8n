@@ -32,9 +32,9 @@ logs: ## Show n8n container logs
 status: ## Show container status
 	@docker compose ps
 
-update: ## Pull latest n8n image and restart container (safe update preserving data)
+update: ## Pull latest n8n images and restart (safe update preserving data)
 	@echo "🔄 Updating n8n to the latest version..."
-	@docker compose pull n8n
+	@docker compose pull
 	@docker compose down
 	@docker compose up -d
 	@echo "✅ n8n updated and running at http://localhost:5678"
