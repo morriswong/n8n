@@ -27,14 +27,12 @@ jobs:
       # Set up environment variables for docker-compose
       - name: Set up environment
         run: |
-          echo "MY_UID=$(id -u)" >> $GITHUB_ENV
-          echo "MY_GID=$(id -g)" >> $GITHUB_ENV
           echo "WEBHOOK_URL=http://localhost:5678/webhook" >> $GITHUB_ENV
           echo "N8N_RUNNERS_AUTH_TOKEN=ci-test-token" >> $GITHUB_ENV
           echo "ANTHROPIC_API_KEY=ci-placeholder" >> $GITHUB_ENV
-          # Create a temporary directory for n8n data that's accessible
+          # Run as the image's default node user (UID 1000); world-writable so the container can write
           mkdir -p /tmp/n8n_data
-          chmod 755 /tmp/n8n_data
+          chmod 777 /tmp/n8n_data
           echo "N8N_DATA_DIR=/tmp/n8n_data" >> $GITHUB_ENV
 
       # Start n8n service using docker-compose
