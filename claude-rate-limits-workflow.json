@@ -1,0 +1,109 @@
+{
+  "id": "1001",
+  "name": "Claude Rate Limit Reporter",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "claude-rate-limits",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-node",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "claude-rate-limits"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json.body || $input.first().json;\nconst staticData = $getWorkflowStaticData('global');\nstaticData.latest_rate_limits = data;\nstaticData.last_updated = new Date().toISOString();\nreturn [{ json: { ok: true } }];"
+      },
+      "id": "store-node",
+      "name": "Store Rate Limits",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\"ok\":true}"
+      },
+      "id": "respond-node",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "schedule-node",
+      "name": "Every Hour",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 520]
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst limits = staticData.latest_rate_limits;\nconst lastUpdated = staticData.last_updated;\n\nif (!limits) return [];\n\nfunction fmtReset(ts) {\n  if (!ts) return 'unknown';\n  return new Date(ts * 1000).toUTCString();\n}\n\nconst fiveHour = limits.five_hour || {};\nconst sevenDay = limits.seven_day || {};\n\nconst msg = [\n  '📊 *Claude Code Rate Limits*',\n  '',\n  `5-hour window: *${(fiveHour.used_percentage || 0).toFixed(1)}%* used`,\n  `Resets: ${fmtReset(fiveHour.resets_at)}`,\n  '',\n  `7-day window: *${(sevenDay.used_percentage || 0).toFixed(1)}%* used`,\n  `Resets: ${fmtReset(sevenDay.resets_at)}`,\n  '',\n  `_Last updated: ${lastUpdated || 'never'}_`\n].join('\\n');\n\nreturn [{ json: { message: msg } }];"
+      },
+      "id": "read-node",
+      "name": "Read Rate Limits",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 520]
+    },
+    {
+      "parameters": {
+        "chatId": "60318574",
+        "text": "={{ $json.message }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "telegram-node",
+      "name": "Send to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [680, 520]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [{ "node": "Store Rate Limits", "type": "main", "index": 0 }]
+      ]
+    },
+    "Store Rate Limits": {
+      "main": [
+        [{ "node": "Respond 200", "type": "main", "index": 0 }]
+      ]
+    },
+    "Every Hour": {
+      "main": [
+        [{ "node": "Read Rate Limits", "type": "main", "index": 0 }]
+      ]
+    },
+    "Read Rate Limits": {
+      "main": [
+        [{ "node": "Send to Telegram", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": []
+}

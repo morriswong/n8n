@@ -414,3 +414,20 @@ cloudflared (running on your VPS)
 | `ANTHROPIC_API_KEY` | Optional — for Claude-based n8n workflows |
 | `N8N_RUNNERS_AUTH_TOKEN` | Shared secret between n8n and the runner sidecar; generate with `openssl rand -hex 32` |
 | `N8N_DATA_DIR` | Override the data directory path (default: `~/n8n_data`) |
+
+---
+
+## Bonus: Claude Code rate limit notifications via Telegram
+
+Sends an hourly Telegram message showing your Claude Code 5-hour and 7-day rate limit usage.
+
+**How it works:**
+- A Claude Code status line script POSTs rate limit data to an n8n webhook after every Claude response
+- n8n stores the latest values in SQLite static data
+- An hourly Schedule Trigger reads the stored values and sends a Telegram message
+
+**Setup:** See the [full setup guide](https://gist.github.com/morriswong/a5869b73792f115a4b5ee0b6729d685e) for the statusline script, n8n workflow JSON, and step-by-step instructions, then:
+
+1. Add the statusline script to `~/.claude/statusline-command.sh` and wire it up in `~/.claude/settings.json`
+2. Import `claude-rate-limits-workflow.json` into n8n via `docker cp` + `n8n import:workflow`
+3. Add a Telegram credential (Settings → Credentials → Telegram API) and activate the workflow
