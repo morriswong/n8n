@@ -36,7 +36,7 @@ update: ## Pull latest n8n images and restart (safe update preserving data)
 	@echo "🔄 Updating n8n to the latest version..."
 	@docker compose pull
 	@docker compose down
-	@export MY_UID=$$(id -u) MY_GID=$$(id -g) HOME=$$HOME && docker compose up -d
+	@HOME=$$HOME docker compose up -d
 	@echo "✅ n8n updated and running at http://localhost:5678"
 
 clean: ## Remove containers and volumes (WARNING: This will delete your data!)
@@ -66,7 +66,7 @@ clean: ## Remove containers and volumes (WARNING: This will delete your data!)
 
 # --- Configuration ---
 # IMPORTANT: Change this to the public hostname you want to use.
-TUNNEL_HOSTNAME ?= n8n.your-domain.com
+TUNNEL_HOSTNAME ?= n8n.morwon.fyi
 # You can change this name, but the default is usually fine.
 TUNNEL_NAME ?= n8n-tunnel
 

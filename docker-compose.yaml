@@ -1,6 +1,6 @@
 services:
   n8n:
-    image: docker.n8n.io/n8nio/n8n:2.18.5
+    image: docker.n8n.io/n8nio/n8n:latest
     container_name: n8n
     restart: always
     ports:
@@ -8,7 +8,7 @@ services:
     volumes:
       - ${N8N_DATA_DIR:-${HOME}/n8n_data}:/home/node/.n8n
       - n8n_files:/home/node/.n8n-files
-    user: "${MY_UID:-1000}:${MY_GID:-1000}"
+    user: "node"
     environment:
       - N8N_USER_FOLDER=/home/node
       - N8N_DEFAULT_BINARY_DATA_MODE=filesystem
@@ -27,7 +27,7 @@ services:
       start_period: 30s
 
   n8n-runner:
-    image: n8nio/runners:2.18.5
+    image: n8nio/runners:latest
     restart: always
     environment:
       - N8N_RUNNERS_TASK_BROKER_URI=http://n8n:5679
