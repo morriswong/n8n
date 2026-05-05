@@ -10,9 +10,9 @@ setup: ## Initial setup - create directories and set permissions
 	@echo "Setting up n8n environment..."
 	@export MY_UID=$$(id -u) MY_GID=$$(id -g) && \
 	echo "Using UID: $$MY_UID, GID: $$MY_GID" && \
-	mkdir -p ~/n8n_data && \
-	chmod 755 ~/n8n_data && \
-	echo "✓ Data directory created with proper permissions"
+	mkdir -p ~/n8n_data ~/n8n_files && \
+	chmod 755 ~/n8n_data ~/n8n_files && \
+	echo "✓ Data directories created with proper permissions"
 
 start: ## Start n8n container
 	@echo "Starting n8n..."

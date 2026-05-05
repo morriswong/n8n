@@ -7,7 +7,7 @@ services:
       - "5678:5678"
     volumes:
       - ${N8N_DATA_DIR:-${HOME}/n8n_data}:/home/node/.n8n
-      - n8n_files:/home/node/.n8n-files
+      - ${N8N_FILES_DIR:-${HOME}/n8n_files}:/home/node/.n8n-files
     user: "node"
     environment:
       - N8N_USER_FOLDER=/home/node
@@ -36,5 +36,4 @@ services:
       n8n:
         condition: service_healthy
 
-volumes:
-  n8n_files:
+volumes: {}
